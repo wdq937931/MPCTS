@@ -1,15 +1,4 @@
-%     function resultshow(data,CL)
-%     
-%     PtSize = 2;
-%     
-%     NC = length(unique(CL));
-%     label_set = unique(CL);
-%     
-%     
-%     [N,M] = size(data);
-%     
-%     figure('Position',[350 350 350 300]);
-%     cmap = UiGetColormap(NC);
+
 %     
 %     for i=1:NC
 %         l=label_set(i);
