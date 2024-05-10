@@ -143,7 +143,6 @@ for i = 1:n_sc
     child_sub= descendant(sl==i);
     edge(i) = length(find(child_sub==0)); %% edge(i): the edge number of sub-cluster 
 end
-%%  
 borderpair = obtain_borderpairs(sl,k,knn,knn_dist);
 blink = obtain_borderlinks(borderpair);
 % [~, OrdRho] = sort(rho, 'descend');
@@ -190,7 +189,6 @@ for i = 1:n
 end
 
 %%  decay strategy
-
 lambda_initial = 0.99; % initial decay factor (scaling factor)
 alpha = 0.5; % decay rate factor
 PHI = zeros(n, 1); 
@@ -205,8 +203,6 @@ for i = 1:n
    
 end
 
-
-%% 
 if isempty(blink)
     CL = sl';
     NC = n_pk;
@@ -244,7 +240,6 @@ for pk1=1:n_sc-1
         if max_smesg>0
             %Gamma = mean(abs(smesgs - max_smesg))/max_smesg; %%
              Gamma = mean(smesgs); 
-%    
                   sim(pk2,pk1) =sum((max_smesg+ Gamma)/2);
                   sim(pk1,pk2) =sum((max_smesg+ Gamma)/2);
         end
@@ -256,7 +251,6 @@ end
 % 创建颜色映射
 
 %% Fused sub cluster
-%  SingleLink = linkage(1-sim_list,'single');
 avgLink = linkage(1-sim_list,'average');
  F_sub_L = cluster( avgLink ,C); 
 
