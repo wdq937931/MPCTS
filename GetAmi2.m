@@ -30,12 +30,7 @@ end
 %         precision = tp(k) / (tp(k) + fp(k));
 %         recall = tp(k) / (tp(k) + fn);
 %         
-%         % 计算每个聚类的F-measure
-%         f_measure_k = 2 * (precision * recall) / (precision + recall);
-%         
-%         % 累加每个聚类的F-measure
-%         f_measure = f_measure + f_measure_k;
-%     end
+
 %     
 %     % 计算宏平均F-measure
 %     f_measure = f_measure / num_clusters;
