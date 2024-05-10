@@ -2,19 +2,22 @@
 function [CL, runtime ] = MPCTS(data,k,C)
 close all
 [n,d]  = size(data); 
-eta=0.1;
 %% Normalization
 data=(data-min(data))./(max(data)-min(data));
-%data = cov(data);
-%meanVals = mean(data);
-%stdVals = std(data);
-%data = (data - meanVals) ./ stdVals;
-% [coeff, data] = pca(data);
-% data = data * coeff;
-data(isnan(data))=0;
+% 计算每列的平均值
+mean_values = nanmean(data);
+% mean_values = mean(data, 'omitnan');
+
+% 找出缺失值的位置并替换为平均值
+missing_values_index = isnan(data);
+data(missing_values_index) = mean_values(missing_values_index);
+
+% nan_indices = isnan(data);
+% data(nan_indices) = mean_values(nan_indices);
 tic;
+eta=0.1;
 %%  KNN
-if d<=11
+if d<=9
     [knn,knn_dist] = knnsearch(data,data,'k',k);
 else
     %dist = mahal(data, data);
@@ -63,8 +66,6 @@ end
 %     end
 
 %%  局部密度计算 Local density calculation
-%rho = k*sum(knn_dist(:,2:k).^1,2).^-1;
-%rho = k*sum(knn_dist(::k).^1,2).^-1,2;
 result = 1 / sqrt(2*pi);
 rho1=sum(exp(-knn_dist(:,2:k)).^2,2)*result;
 
@@ -116,22 +117,22 @@ for i=1:n
 end
 
 %%  衰减策略的引入
-theta = ones(n,1); %theta(i): the center-representativeness of point 'i' (initialization)
-descendant = zeros(n,1); % descendant(i): the descendant node number of point 'i' (initialization)
+theta = ones(n,1); 
+descendant = zeros(n,1);  
 [~,OrdRho]=sort(rho,'descend');
 for i=1:n
     for j=2:k
         neigh=knn(OrdRho(i),j);
         if(rho(OrdRho(i))<rho(neigh))
-            NPN(OrdRho(i))=neigh;%% NPN:neigbor-based parent node, i.e., nearest higher density point within the KNN area.
+            NPN(OrdRho(i))=neigh;%% NPN:neigbor-based parent node
             theta(OrdRho(i)) = theta(neigh)* rho(OrdRho(i))/rho(neigh);
             descendant(neigh) = descendant(neigh)+1;
             break
         end
     end
 end
-%% generate sub-clsuters
-sl=-1*ones(n,1); %% sl: sub-labels of points.
+%% 
+sl=-1*ones(n,1);
 sl(sub_centers) = (1:n_sc); %% give unique sub-labels to density peaks.
 for i=1:n
     if (sl(OrdRho(i))==-1)
@@ -140,15 +141,14 @@ for i=1:n
 end
 for i = 1:n_sc
     child_sub= descendant(sl==i);
-    edge(i) = length(find(child_sub==0)); %% edge(i): the edge number of sub-cluster 'i'
+    edge(i) = length(find(child_sub==0)); %% edge(i): the edge number of sub-cluster 
 end
-%%  Discovering associated edges
+%%  
 borderpair = obtain_borderpairs(sl,k,knn,knn_dist);
-%% obtain border links
 blink = obtain_borderlinks(borderpair);
 % [~, OrdRho] = sort(rho, 'descend');
 for i = 1:n
-    omega(i) = 0; % omega: depth value
+    omega(i) = 0; 
 end
 for i = 1:n
     for j = 2:k
@@ -174,14 +174,14 @@ for i=1:n
     end
 end
 %% 衰减策略
-theta = ones(n,1); % theta(i): the center-representativeness of point 'i' (initialization)
-descendant = zeros(n,1); % descendant(i): the descendant node number of point 'i' (initialization)
+theta = ones(n,1); 
+descendant = zeros(n,1);
 [~, OrdRho] = sort(rho, 'descend');
 for i = 1:n
     for j = 2:k
         neigh = knn(OrdRho(i), j);
         if(rho(OrdRho(i)) < rho(neigh))
-            NPN(OrdRho(i)) = neigh; % NPN: neighbor-based parent node, i.e., nearest higher density point within the KNN area.
+            NPN(OrdRho(i)) = neigh; 
             theta(OrdRho(i)) = theta(neigh) * rho(OrdRho(i)) / rho(neigh);
             descendant(neigh) = descendant(neigh) + 1;
             break
@@ -206,7 +206,7 @@ for i = 1:n
 end
 
 
-%% if there is no border link, output sub-clustering result
+%% 
 if isempty(blink)
     CL = sl';
     NC = n_pk;
@@ -219,7 +219,7 @@ if isempty(blink)
 end
 
 n_blink = size(blink,1);
-simimesgs = cell(n_sc,n_sc); %smeg(i,j): a set of all similarity messages bewteen density peak 'i' and 'j'
+simimesgs = cell(n_sc,n_sc); 
 for i = 1:n_blink
     ii = blink(i,1);
     jj = blink(i,2);
@@ -238,7 +238,7 @@ for pk1=1:n_sc-1
         smesgs = simimesgs(pk1,pk2);
         smesgs = smesgs{:};
         max_smesg = max(smesgs);
-        min_n_smesg = ceil(min(edge(pk1),edge(pk2))*eta); %% min_n_smesg: the minimum standard number of similarity message samples
+        min_n_smesg = ceil(min(edge(pk1),edge(pk2))*eta); 
         smesgs = sort([smesgs;zeros(min_n_smesg,1)],'descend');
         smesgs = smesgs(1:min_n_smesg);
         if max_smesg>0
@@ -259,19 +259,15 @@ end
 %  SingleLink = linkage(1-sim_list,'single');
 avgLink = linkage(1-sim_list,'average');
  F_sub_L = cluster( avgLink ,C); 
-%% AP聚类算法
 
 %% assign final cluster label
 for i=1:n_sc
     AA = find(sub_L==i);
-    CL(AA) = F_sub_L(i); %% CL: the cluster label
+    CL(AA) = F_sub_L(i); %% CL
 end
  runtime = toc;
 %% draw result
-% scrsz = get(0,'ScreenSize');
-% figure('Position',[650 472 scrsz(3)/2 scrsz(4)/1.5]);
  cmap = colormap;
-%% show dendrogram
 subplot(2,2,1:2)
 dendrogram( avgLink,0);
 axis([0 n_sc+1 0 1]);
@@ -281,7 +277,6 @@ ylabel ('similarity','FontSize',20.0);
 title('dendrogram','FontSize',20);
 set(gca,'YTickLabel','');
 hold on
-% show sub-clusters
 subplot(2,2,3)
 for i=1:n_sc
     ic=int8((i*64.)/(n_sc*1.));
@@ -290,13 +285,9 @@ for i=1:n_sc
     text(data(sub_centers(i),1)-0.010,data(sub_centers(i),2), num2str(i),'FontSize',10,'Color','r','FontWeight','Bold');
     hold on
 end
-% title('sub-clusters','FontSize',20);
 set(gca,'XTickLabel','');
 set(gca,'YTickLabel','');
 % 绘制子簇数据点
-% 假设聚类结果存储在 sub_L 向量中
-% 假设已经定义了数据集 data 和子簇数量 n_sc
-
 % 使用 jet 颜色映射
 cmap = jet(n_sc);
 
