@@ -314,43 +314,5 @@ legend(legendCell, 'Location', 'best');
 
 
 
-function [borderpair] = obtain_borderpairs(sl,k_b,knn,knn_dist)
-borderpair = [];
-n = length(sl);
-for i=1:n
-    label_i = sl(i);
-    for j = 2:k_b
-        i_nei = knn(i,j);
-        dist_i_nei = knn_dist(i,j);
-        label_nei = sl(i_nei);
-        if label_i ~= label_nei & find(knn(i_nei,2:k_b)==i)
-            borderpair = [borderpair;[i i_nei dist_i_nei]];
-            break
-        end
-    end
-end
-
-
-
-
-function [blink] = obtain_borderlinks(borderpair)
-if isempty(borderpair)
-    blink = [];
-else
-    borderpair(:,1:2) = sort(borderpair(:,1:2),2);
-    [~,index] = unique(borderpair(:,3));
-    borderpair = borderpair(index,:);
-    borderpair = sortrows(borderpair,3);
-    n_pairs = size(borderpair,1);
-    blink = []; %% blink: border link
-    for i = 1:n_pairs
-        bp = borderpair(i,1:2);
-        if isempty(intersect(bp,blink))
-            blink = [blink;bp];
-        end
-    end
-end
-
-
 
 
