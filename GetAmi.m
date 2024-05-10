@@ -9,7 +9,7 @@ elseif nargin==2
     C=max(mem);
     n=length(mem);N=n;
 
-    %identify & removing the missing labels
+   
     list_t=ismember(1:R,true_mem);
     list_m=ismember(1:C,mem);
     T=Contingency(true_mem,mem);
