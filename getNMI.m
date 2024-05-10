@@ -2,7 +2,7 @@ function [NMI_, AMI_] = getNMI(true_mem, mem)
     if nargin == 1
         T = true_mem; %预供的列联表
     elseif nargin == 2
-        % 从成员数组构建列联表
+       
         R = max(true_mem);
         C = max(mem);
         n = length(mem);
