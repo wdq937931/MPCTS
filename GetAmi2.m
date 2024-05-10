@@ -16,22 +16,7 @@ elseif nargin==2
     T=T(list_t,list_m);
 end
 
-% function f_measure = calculateFMeasure(true_mem, mem)
-%     if nargin == 1
-%         T = true_mem; % 事先提供的Contingency矩阵
-%     elseif nargin == 2
-%         R = max(true_mem);
-%         C = max(mem);
-%         n = length(mem);
-%         N = n;
-%         
-%         % 确定和去除缺失的标签
-%         list_t = ismember(1:R, true_mem);
-%         list_m = ismember(1:C, mem);
-%         T = Contingency(true_mem, mem);
-%         T = T(list_t, list_m);
-%     end
-%     
+
 %     % 计算F-measure
 %     num_clusters = size(T, 2);
 %     f_measure = 0;
